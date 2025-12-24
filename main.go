@@ -47,7 +47,30 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func getUser(db *sql.DB) http.HandlerFunc {
 	return func (w http.ResponseWriter, r * http.Request){
-		
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+
+		if email == "" || password == ""{
+			http.Error(w, "missing credentials", http.StatusBadRequest)
+		}
+
+		var verifyEmail bool
+
+		verifyEmail = checkUserByEmail(db, email)
+
+		if !verifyEmail{
+			w.Write([]byte("email not registered"))
+			return
+		}
+
+		var verifyPass = findUserCredentials(db, email, password)
+
+		if !verifyPass{
+			w.Write([]byte("password not matched"))
+			return
+		}
+		var url string
+		http.Redirect(w, r, url, http.StatusMovedPermanently)
 	}
 }
 
