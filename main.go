@@ -14,25 +14,6 @@ func main() {
 
 	db := connectDB()
 	defer db.Close()
-
-	// createUserTable(db)
-
-	// data := User{
-	// 	Name: "Piyush3",
-	// 	Email: "piyush3@gmail.com",
-	// 	Password: "secretpassword2",
-	// 	Active: true,
-	// }
-
-	// pk := insertUser(db, data)
-
-	// var fetchedUser User
-
-	// fetchedUser = fetchUser(db, pk)
-	// fmt.Printf("User -> %s", fetchedUser.Name)
-
-	// fmt.Printf("Id %d", pk)
-
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", handleRoot)
