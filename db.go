@@ -31,6 +31,10 @@ func checkUserByEmail(db *sql.DB, email string) bool {
 	return count > 0
 }
 
+// func findUserCredentials(db *sql.DB, email string, password string){
+// 	query := ``
+// }
+
 func fetchUser(db *sql.DB, pk int) User {
 	query := `SELECT name, email, password, active FROM users WHERE id = $1`
 

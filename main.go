@@ -37,12 +37,18 @@ func main() {
 
 	mux.HandleFunc("/", handleRoot)
 	mux.HandleFunc("POST /register", createUser(db))
-	// mux.HandleFunc("GET /login", getUser)
+	mux.HandleFunc("GET /login", getUser(db))
 	http.ListenAndServe(":3000", mux)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "hello from /")
+}
+
+func getUser(db *sql.DB) http.HandlerFunc {
+	return func (w http.ResponseWriter, r * http.Request){
+		
+	}
 }
 
 func createUser(db *sql.DB) http.HandlerFunc {

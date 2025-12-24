@@ -1,42 +1,120 @@
 import { useState } from 'react'
-import viteLogo from '/vite.svg'
 import './App.css'
 
+type Message = { type: 'success' | 'error'; text: string } | null
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [activeTab, setActiveTab] = useState<'register' | 'login'>('register')
+  const [message, setMessage] = useState<Message>(null)
+
+  const submitRegister: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault()
+    setMessage(null)
+
+    const fd = new FormData(e.currentTarget)
+    const params = new URLSearchParams()
+    params.set('name', String(fd.get('name') ?? ''))
+    params.set('email', String(fd.get('email') ?? ''))
+    params.set('password', String(fd.get('password') ?? ''))
+
+    try {
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+      })
+      const text = await res.text()
+      if (!res.ok) {
+        setMessage({ type: 'error', text })
+      } else {
+        setMessage({ type: 'success', text })
+        e.currentTarget.reset()
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err?.message || 'Network error' })
+    }
+  }
+
+  const submitLogin: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault()
+    setMessage(null)
+
+    const fd = new FormData(e.currentTarget)
+    const params = new URLSearchParams()
+    params.set('email', String(fd.get('email') ?? ''))
+    params.set('password', String(fd.get('password') ?? ''))
+
+    try {
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString(),
+      })
+      const text = await res.text()
+      if (!res.ok) {
+        setMessage({ type: 'error', text })
+      } else {
+        setMessage({ type: 'success', text })
+        e.currentTarget.reset()
+      }
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err?.message || 'Network error' })
+    }
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-      </div>
-      <h1>User SignIn Login Page</h1>
-      <div className="card">
-        <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <label htmlFor="name" style={{ fontWeight: '500' }}>Name:</label>
-        <input type="text" id="name" name="name" required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <label htmlFor="email" style={{ fontWeight: '500' }}>Email:</label>
-        <input type="email" id="email" name="email" required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <label htmlFor="password" style={{ fontWeight: '500' }}>Password:</label>
-        <input type="password" id="password" name="password" required style={{ padding: '0.75rem', borderRadius: '0.5rem', border: '1px solid #ccc' }} />
-          </div>
-          <button type="submit" style={{ padding: '0.75rem', marginTop: '1rem', backgroundColor: '#666', color: 'white', border: 'none', borderRadius: '0.5rem', fontWeight: '600', cursor: 'pointer' }}>Sign In</button>
-          <button type="button" style={{ padding: '0.75rem', backgroundColor: '#666', color: 'white', border: 'none', borderRadius: '0.5rem', fontWeight: '600', cursor: 'pointer' }}>Login</button>
-        </form>
-      </div>
-      {/* <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="container">
+      <h1>Auth</h1>
+
+      {message && (
+        <div className={`banner ${message.type}`}>{message.text}</div>
+      )}
+
+      <div className="tabs">
+        <button
+          className={activeTab === 'register' ? 'active' : ''}
+          onClick={() => setActiveTab('register')}
+        >
+          Register
         </button>
-      </div> */}
-    </>
+        <button
+          className={activeTab === 'login' ? 'active' : ''}
+          onClick={() => setActiveTab('login')}
+        >
+          Login
+        </button>
+      </div>
+
+      {activeTab === 'register' ? (
+        <form className="form" onSubmit={submitRegister}>
+          <label>
+            <span>Name</span>
+            <input name="name" type="text" required />
+          </label>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input name="password" type="password" required />
+          </label>
+          <button type="submit">Register</button>
+        </form>
+      ) : (
+        <form className="form" onSubmit={submitLogin}>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input name="password" type="password" required />
+          </label>
+          <button type="submit">Login</button>
+        </form>
+      )}
+    </div>
   )
 }
 
