@@ -11,7 +11,8 @@ function App() {
     e.preventDefault()
     setMessage(null)
 
-    const fd = new FormData(e.currentTarget)
+    const form = e.currentTarget as HTMLFormElement
+    const fd = new FormData(form)
     const params = new URLSearchParams()
     params.set('name', String(fd.get('name') ?? ''))
     params.set('email', String(fd.get('email') ?? ''))
@@ -28,7 +29,7 @@ function App() {
         setMessage({ type: 'error', text })
       } else {
         setMessage({ type: 'success', text })
-        e.currentTarget.reset()
+        form.reset()
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err?.message || 'Network error' })
@@ -39,7 +40,8 @@ function App() {
     e.preventDefault()
     setMessage(null)
 
-    const fd = new FormData(e.currentTarget)
+    const form = e.currentTarget as HTMLFormElement
+    const fd = new FormData(form)
     const params = new URLSearchParams()
     params.set('email', String(fd.get('email') ?? ''))
     params.set('password', String(fd.get('password') ?? ''))
@@ -55,7 +57,7 @@ function App() {
         setMessage({ type: 'error', text })
       } else {
         setMessage({ type: 'success', text })
-        e.currentTarget.reset()
+        form.reset()
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err?.message || 'Network error' })

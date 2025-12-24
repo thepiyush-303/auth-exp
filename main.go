@@ -18,7 +18,7 @@ func main() {
 
 	mux.HandleFunc("/", handleRoot)
 	mux.HandleFunc("POST /register", createUser(db))
-	mux.HandleFunc("GET /login", getUser(db))
+	mux.HandleFunc("POST /login", getUser(db))
 	http.ListenAndServe(":3000", mux)
 }
 

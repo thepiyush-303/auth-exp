@@ -17,7 +17,7 @@ func connectDB() *sql.DB {
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("working")
+	// fmt.Println("working")
 	return db
 }
 
