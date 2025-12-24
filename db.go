@@ -6,21 +6,30 @@ import (
 	"log"
 )
 
-func connectDB() *sql.DB{
+func connectDB() *sql.DB {
 	db, err := sql.Open(
 		"pgx",
 		"postgres://postgres:heythisismypassword@localhost:5432/authdb",
 	)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
-	if err = db.Ping(); err != nil{
+	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("working")
 	return db
 }
 
+func checkUserByEmail(db *sql.DB, email string) bool {
+	query := `SELECT COUNT(*) FROM users WHERE email = $1`
+	var count int
+	err := db.QueryRow(query, email).Scan(&count)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return count > 0
+}
 
 func fetchUser(db *sql.DB, pk int) User {
 	query := `SELECT name, email, password, active FROM users WHERE id = $1`
@@ -29,8 +38,8 @@ func fetchUser(db *sql.DB, pk int) User {
 
 	err := db.QueryRow(query, pk).Scan(&user.Name, &user.Email, &user.Password, &user.Active)
 
-	if err != nil{
-		if err == sql.ErrNoRows{
+	if err != nil {
+		if err == sql.ErrNoRows {
 			fmt.Printf("No row with the id %d", pk)
 		}
 		log.Fatal(err)
@@ -38,8 +47,7 @@ func fetchUser(db *sql.DB, pk int) User {
 	return user
 }
 
-
-func insertUser(db *sql.DB, data User) int{
+func insertUser(db *sql.DB, data User) int {
 	query := `INSERT INTO users	(
 		name, email, password, active)
 		VALUES ($1, $2, $3, $4) RETURNING id`
@@ -47,13 +55,13 @@ func insertUser(db *sql.DB, data User) int{
 	var pk int
 	err := db.QueryRow(query, data.Name, data.Email, data.Password, data.Active).Scan(&pk)
 
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 	return pk
 }
 
-func createUserTable(db *sql.DB){
+func createUserTable(db *sql.DB) {
 	query := `CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
 		name VARCHAR(100) UNIQUE NOT NULL,
@@ -62,7 +70,7 @@ func createUserTable(db *sql.DB){
 		active BOOLEAN
 	)`
 	_, err := db.Exec(query)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 	}
 }
