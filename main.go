@@ -17,8 +17,8 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", handleRoot)
-	mux.HandleFunc("POST /register", createUser(db))
-	mux.HandleFunc("POST /login", getUser(db))
+	mux.HandleFunc("POST /register", register(db))
+	mux.HandleFunc("POST /login", login(db))
 	fmt.Println("Server running at port 3000")
 	http.ListenAndServe(":3000", mux)
 }
@@ -27,7 +27,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "hello from root")
 }
 
-func getUser(db *sql.DB) http.HandlerFunc {
+func login(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		password := r.FormValue("password")
@@ -47,7 +47,7 @@ func getUser(db *sql.DB) http.HandlerFunc {
 
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
-		if err != nil{
+		if err != nil {
 			w.Write([]byte("password not matched"))
 			return
 		}
@@ -56,7 +56,7 @@ func getUser(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func createUser(db *sql.DB) http.HandlerFunc {
+func register(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// name email password
 
@@ -69,7 +69,7 @@ func createUser(db *sql.DB) http.HandlerFunc {
 			return
 		}
 		_, err := checkUserByEmail(db, email)
-		
+
 		if err == nil {
 			// fmt.Fprint(w, "Email already registered")
 			http.Error(w, "User already exists", http.StatusBadRequest)
@@ -82,8 +82,6 @@ func createUser(db *sql.DB) http.HandlerFunc {
 			return
 		}
 		password = string(hashedPassword)
-
-		
 
 		data := User{
 			Name:     name,

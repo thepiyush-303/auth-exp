@@ -21,14 +21,13 @@ func connectDB() *sql.DB {
 }
 
 func checkUserByEmail(db *sql.DB, email string) (User, error) {
-	query := `SELECT ROW FROM TABLE WHERE email = $1`
+	query := `SELECT name, email, password, active FROM users WHERE email = $1`
 
 	var user User
 
-	err := db.QueryRow(query, email).Scan(&user)
+	err := db.QueryRow(query, email).Scan(&user.Name, &user.Email, &user.Password, &user.Active)
 
 	if err != nil {
-		log.Fatal(err)
 		return user, err
 	}
 	return user, nil
