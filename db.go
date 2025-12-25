@@ -17,18 +17,21 @@ func connectDB() *sql.DB {
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
 	}
-	// fmt.Println("working")
 	return db
 }
 
-func checkUserByEmail(db *sql.DB, email string) bool {
-	query := `SELECT COUNT(*) FROM users WHERE email = $1`
-	var count int
-	err := db.QueryRow(query, email).Scan(&count)
+func checkUserByEmail(db *sql.DB, email string) (User, error) {
+	query := `SELECT ROW FROM TABLE WHERE email = $1`
+
+	var user User
+
+	err := db.QueryRow(query, email).Scan(&user)
+
 	if err != nil {
 		log.Fatal(err)
+		return user, err
 	}
-	return count > 0
+	return user, nil
 }
 
 func findUserCredentials(db *sql.DB, email string, password string) bool {
@@ -36,7 +39,7 @@ func findUserCredentials(db *sql.DB, email string, password string) bool {
 
 	var pass string
 	err := db.QueryRow(query, email).Scan(&pass)
-	if err != nil{
+	if err != nil {
 		log.Fatal(err)
 		return false
 	}

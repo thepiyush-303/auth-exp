@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	// "golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
@@ -19,34 +19,35 @@ func main() {
 	mux.HandleFunc("/", handleRoot)
 	mux.HandleFunc("POST /register", createUser(db))
 	mux.HandleFunc("POST /login", getUser(db))
+	fmt.Println("Server running at port 3000")
 	http.ListenAndServe(":3000", mux)
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "hello from /")
+	fmt.Fprintf(w, "hello from root")
 }
 
 func getUser(db *sql.DB) http.HandlerFunc {
-	return func (w http.ResponseWriter, r * http.Request){
+	return func(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		password := r.FormValue("password")
 
-		if email == "" || password == ""{
+		if email == "" || password == "" {
 			http.Error(w, "missing credentials", http.StatusBadRequest)
 		}
 
-		var verifyEmail bool
+		var user User
 
-		verifyEmail = checkUserByEmail(db, email)
+		user, err := checkUserByEmail(db, email)
 
-		if !verifyEmail{
+		if err != nil {
 			w.Write([]byte("email not registered"))
 			return
 		}
 
-		var verifyPass = findUserCredentials(db, email, password)
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
-		if !verifyPass{
+		if err != nil{
 			w.Write([]byte("password not matched"))
 			return
 		}
@@ -63,24 +64,32 @@ func createUser(db *sql.DB) http.HandlerFunc {
 		email := r.FormValue("email")
 		password := r.FormValue("password")
 
-		if name == "" || email == "" || password == ""{
+		if name == "" || email == "" || password == "" {
 			http.Error(w, "missing fields", http.StatusBadRequest)
 			return
 		}
-
-		flag := checkUserByEmail(db, email)
-
-		if flag {
+		_, err := checkUserByEmail(db, email)
+		
+		if err == nil {
 			// fmt.Fprint(w, "Email already registered")
 			http.Error(w, "User already exists", http.StatusBadRequest)
 			return
 		}
 
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 14) //transforms the string into a byte
+		if err != nil {
+			http.Error(w, "error hashing password", http.StatusInternalServerError)
+			return
+		}
+		password = string(hashedPassword)
+
+		
+
 		data := User{
-			Name: name,
-			Email: email,
+			Name:     name,
+			Email:    email,
 			Password: password,
-			Active: true,
+			Active:   true,
 		}
 		insertUser(db, data)
 		// fmt.Fprintf(w, "User successfully created")
