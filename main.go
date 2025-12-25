@@ -34,6 +34,7 @@ func login(db *sql.DB) http.HandlerFunc {
 
 		if email == "" || password == "" {
 			http.Error(w, "missing credentials", http.StatusBadRequest)
+			return 
 		}
 
 		var user User
@@ -41,18 +42,19 @@ func login(db *sql.DB) http.HandlerFunc {
 		user, err := checkUserByEmail(db, email)
 
 		if err != nil {
-			w.Write([]byte("email not registered"))
+			http.Error(w, "email not registered", http.StatusBadRequest)
 			return
 		}
 
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
 		if err != nil {
-			w.Write([]byte("password not matched"))
+			http.Error(w, "Password not matched", http.StatusBadRequest)
 			return
 		}
-		var url string
-		http.Redirect(w, r, url, http.StatusMovedPermanently)
+		w.Write([]byte("Logged in successfully"))
+		// var url string
+		// http.Redirect(w, r, url, http.StatusMovedPermanently)
 	}
 }
 

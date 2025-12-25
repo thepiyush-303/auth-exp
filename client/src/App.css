@@ -33,12 +33,13 @@
 .tabs button {
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
+  text-decoration-thickness: 2px;
   border: 1px solid #ddd;
-  background: #f7f7f7;
+  background: #310505;
   cursor: pointer;
 }
 .tabs button.active {
-  background: #e9e9e9;
+  background: #0d47c2;
 }
 
 .form {

@@ -1,68 +1,68 @@
-import { useState } from 'react'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
 
-type Message = { type: 'success' | 'error'; text: string } | null
+type Message = { type: "success" | "error"; text: string } | null;
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'register' | 'login'>('register')
-  const [message, setMessage] = useState<Message>(null)
+  const [activeTab, setActiveTab] = useState<"register" | "login">("register");
+  const [message, setMessage] = useState<Message>(null);
 
   const submitRegister: React.FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault()
-    setMessage(null)
+    e.preventDefault();
+    setMessage(null);
 
-    const form = e.currentTarget as HTMLFormElement
-    const fd = new FormData(form)
-    const params = new URLSearchParams()
-    params.set('name', String(fd.get('name') ?? ''))
-    params.set('email', String(fd.get('email') ?? ''))
-    params.set('password', String(fd.get('password') ?? ''))
+    const form = e.currentTarget as HTMLFormElement;
+    const fd = new FormData(form);
+    const params = new URLSearchParams();
+    params.set("name", String(fd.get("name") ?? ""));
+    params.set("email", String(fd.get("email") ?? ""));
+    params.set("password", String(fd.get("password") ?? ""));
 
     try {
-      const res = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      const res = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params.toString(),
-      })
-      const text = await res.text()
+      });
+      const text = await res.text();
       if (!res.ok) {
-        setMessage({ type: 'error', text })
+        setMessage({ type: "error", text });
       } else {
-        setMessage({ type: 'success', text })
-        form.reset()
+        setMessage({ type: "success", text });
+        form.reset();
       }
     } catch (err: any) {
-      setMessage({ type: 'error', text: err?.message || 'Network error' })
+      setMessage({ type: "error", text: err?.message || "Network error" });
     }
-  }
+  };
 
   const submitLogin: React.FormEventHandler<HTMLFormElement> = async (e) => {
-    e.preventDefault()
-    setMessage(null)
+    e.preventDefault();
+    setMessage(null);
 
-    const form = e.currentTarget as HTMLFormElement
-    const fd = new FormData(form)
-    const params = new URLSearchParams()
-    params.set('email', String(fd.get('email') ?? ''))
-    params.set('password', String(fd.get('password') ?? ''))
+    const form = e.currentTarget as HTMLFormElement;
+    const fd = new FormData(form);
+    const params = new URLSearchParams();
+    params.set("email", String(fd.get("email") ?? ""));
+    params.set("password", String(fd.get("password") ?? ""));
 
     try {
-      const res = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params.toString(),
-      })
-      const text = await res.text()
+      });
+      const text = await res.text();
       if (!res.ok) {
-        setMessage({ type: 'error', text })
+        setMessage({ type: "error", text });
       } else {
-        setMessage({ type: 'success', text })
-        form.reset()
+        setMessage({ type: "success", text });
+        form.reset();
       }
     } catch (err: any) {
-      setMessage({ type: 'error', text: err?.message || 'Network error' })
+      setMessage({ type: "error", text: err?.message || "Network error" });
     }
-  }
+  };
 
   return (
     <div className="container">
@@ -74,20 +74,20 @@ function App() {
 
       <div className="tabs">
         <button
-          className={activeTab === 'register' ? 'active' : ''}
-          onClick={() => setActiveTab('register')}
+          className={activeTab === "register" ? "active" : ""}
+          onClick={() => setActiveTab("register")}
         >
           Register
         </button>
         <button
-          className={activeTab === 'login' ? 'active' : ''}
-          onClick={() => setActiveTab('login')}
+          className={activeTab === "login" ? "active" : ""}
+          onClick={() => setActiveTab("login")}
         >
           Login
         </button>
       </div>
 
-      {activeTab === 'register' ? (
+      {activeTab === "register" ? (
         <form className="form" onSubmit={submitRegister}>
           <label>
             <span>Name</span>
@@ -117,7 +117,7 @@ function App() {
         </form>
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
