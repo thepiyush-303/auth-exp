@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"golang.org/x/crypto/bcrypt"
+	// "github.com/golang-jwt/jwt"
 )
 
 func main() {
@@ -19,6 +19,8 @@ func main() {
 	mux.HandleFunc("/", handleRoot)
 	mux.HandleFunc("POST /register", register(db))
 	mux.HandleFunc("POST /login", login(db))
+	mux.HandleFunc("GET /pro", protectedRoute)
+	
 	fmt.Println("Server running at port 3000")
 	http.ListenAndServe(":3000", mux)
 }
@@ -49,13 +51,50 @@ func login(db *sql.DB) http.HandlerFunc {
 		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 
 		if err != nil {
-			http.Error(w, "Password not matched", http.StatusBadRequest)
+			http.Error(w, "Password do not matched", http.StatusBadRequest)
 			return
 		}
 		w.Write([]byte("Logged in successfully"))
+
+		tokenString, err := createToken(email)
+
+		if err != nil{
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "can't able to create token")
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprint(w, tokenString)	
 		// var url string
 		// http.Redirect(w, r, url, http.StatusMovedPermanently)
 	}
+}
+
+func protectedRoute(w http.ResponseWriter, r *http.Request){
+	w.Header().Set("Content-Type", "application/json")
+
+	token := r.Header.Get("Authorization")
+
+	if token == ""{
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, "Missing authorization header")
+		return
+	}
+	fmt.Println("token  ", token)
+
+	token = token[len("bearer "):]
+
+	err := verifyToken(token)
+
+	if err != nil{
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, "invalid token")
+		return
+	}
+
+	w.WriteHeader(http.StatusAccepted)
+	w.Write([]byte(token))
+	fmt.Fprint(w, "welcome")
 }
 
 func register(db *sql.DB) http.HandlerFunc {
