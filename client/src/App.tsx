@@ -1,122 +1,128 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
-type Message = { type: "success" | "error"; text: string } | null;
-
 function App() {
-  const [activeTab, setActiveTab] = useState<"register" | "login">("register");
-  const [message, setMessage] = useState<Message>(null);
+  const [error, setError] = useState<undefined | string>(undefined);
+  const [control, setControl] = useState(false);
 
-  const submitRegister: React.FormEventHandler<HTMLFormElement> = async (e) => {
+  useEffect(() => {
+    async function Verify() {
+      try {
+        const response = await fetch("/api/verify", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!response.ok) {
+          const data = await response.json();
+          setError(data.error);
+          return;
+        }
+        const data = await response.json();
+        console.log(data);
+        setControl(true);
+        setError(undefined);
+      } catch (err) {
+        console.log(err);
+        setError("error occured");
+      }
+    }
+    Verify();
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setMessage(null);
-
     const form = e.currentTarget as HTMLFormElement;
-    const fd = new FormData(form);
-    const params = new URLSearchParams();
-    params.set("name", String(fd.get("name") ?? ""));
-    params.set("email", String(fd.get("email") ?? ""));
-    params.set("password", String(fd.get("password") ?? ""));
+    const formData = new FormData(form);
+    const reqData = Object.fromEntries(formData.entries());
+
+    const config = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(reqData),
+    };
 
     try {
-      const res = await fetch("/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-      const text = await res.text();
-      if (!res.ok) {
-        setMessage({ type: "error", text });
-      } else {
-        setMessage({ type: "success", text });
-        form.reset();
+      console.log(reqData);
+      const response = await fetch("/api/auth/register", config);
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.error);
+        return;
       }
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Network error" });
+      const data = await response.json();
+      console.log("userSignIn", data);
+      setError(undefined);
+    } catch (err) {
+      console.log(`Error: ${err}`);
+      setError(`An error occurred  ${err}`);
     }
-  };
+  }
 
-  const submitLogin: React.FormEventHandler<HTMLFormElement> = async (e) => {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
+    console.log("handleLogin Called");
     e.preventDefault();
-    setMessage(null);
-
     const form = e.currentTarget as HTMLFormElement;
-    const fd = new FormData(form);
-    const params = new URLSearchParams();
-    params.set("email", String(fd.get("email") ?? ""));
-    params.set("password", String(fd.get("password") ?? ""));
+    const formData = new FormData(form);
+    const reqData = Object.fromEntries(formData.entries());
+
+    const config = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(reqData),
+    };
 
     try {
-      const res = await fetch("/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
-      });
-      const text = await res.text();
-      if (!res.ok) {
-        setMessage({ type: "error", text });
-      } else {
-        setMessage({ type: "success", text });
-        form.reset();
+      console.log(reqData);
+      const response = await fetch("/api/auth/login/", config);
+      if (!response.ok) {
+        const data = await response.json();
+        setError(data.error);
+        return;
       }
-    } catch (err: any) {
-      setMessage({ type: "error", text: err?.message || "Network error" });
+      const data = await response.json();
+      console.log(data);
+      localStorage.setItem("token", data.token);
+      setError(undefined);
+      setControl(true);
+    } catch (err) {
+      console.log(`Error: ${err}`);
+      setError("An error occurred");
     }
-  };
+  }
 
   return (
-    <div className="container">
-      <h1>Auth</h1>
-
-      {message && (
-        <div className={`banner ${message.type}`}>{message.text}</div>
-      )}
-
-      <div className="tabs">
-        <button
-          className={activeTab === "register" ? "active" : ""}
-          onClick={() => setActiveTab("register")}
-        >
-          Register
-        </button>
-        <button
-          className={activeTab === "login" ? "active" : ""}
-          onClick={() => setActiveTab("login")}
-        >
-          Login
-        </button>
-      </div>
-
-      {activeTab === "register" ? (
-        <form className="form" onSubmit={submitRegister}>
-          <label>
-            <span>Name</span>
-            <input name="name" type="text" required />
-          </label>
-          <label>
-            <span>Email</span>
-            <input name="email" type="email" required />
-          </label>
-          <label>
-            <span>Password</span>
-            <input name="password" type="password" required />
-          </label>
-          <button type="submit">Register</button>
-        </form>
-      ) : (
-        <form className="form" onSubmit={submitLogin}>
-          <label>
-            <span>Email</span>
-            <input name="email" type="email" required />
-          </label>
-          <label>
-            <span>Password</span>
-            <input name="password" type="password" required />
-          </label>
-          <button type="submit">Login</button>
-        </form>
-      )}
-    </div>
+    <>
+      {error && <div>{error}</div>}
+      <h1>Register</h1>
+      <form onSubmit={handleSubmit}>
+        <input type="text" name="username" placeholder="Enter your username" />
+        <input
+          type="password"
+          name="password"
+          id="password"
+          placeholder="Enter Your Password"
+        />
+        <button type="submit">Submit</button>
+      </form>
+      <h1>Login</h1>
+      <form onSubmit={handleLogin}>
+        <input type="text" name="username" placeholder="Enter your username" />
+        <input
+          type="password"
+          name="password"
+          id="password"
+          placeholder="Enter Your Password"
+        />
+        <button type="submit">Submit</button>
+      </form>
+      {control && <div>secret</div>}
+    </>
   );
 }
 

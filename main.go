@@ -17,9 +17,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", handleRoot)
-	mux.HandleFunc("POST /register", register(db))
-	mux.HandleFunc("POST /login", login(db))
-	mux.HandleFunc("GET /pro", protectedRoute)
+	mux.HandleFunc("POST api/auth/register", register(db))
+	mux.HandleFunc("POST api/auth/login", login(db))
+	mux.HandleFunc("GET api/pro", protectedRoute)
 	
 	fmt.Println("Server running at port 3000")
 	http.ListenAndServe(":3000", mux)

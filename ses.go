@@ -10,7 +10,7 @@ import (
 var secretKey = []byte("secret-pass")
 
 func createToken(userid string) (string, error){
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username" : userid,
 		"expiry" : time.Now().Add(24 * time.Hour).Unix(),
 	})
